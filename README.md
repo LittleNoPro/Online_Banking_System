@@ -11,9 +11,9 @@ Hệ thống ngân hàng trực tuyến trên blockchain Ethereum.
 | Grace period | (A mod 3) + 2 | 2 ngày |
 | Default APR | 200 + A×25 bps | 275 bps (2.75%) |
 | Early withdraw penalty | 300 + B×50 bps | 450 bps (4.5%) |
-| Default tenor | B lẻ → 180 ngày | 180 ngày |
+| Default tenor | B is odd → 180 days | 180 days |
 
-## Hướng dẫn cài đặt và chạy hệ thống
+## Set up & Build
 
 ```bash
 git clone git@github.com:LittleNoPro/Online_Banking_System.git
@@ -25,7 +25,7 @@ npm run compile         # Compile contracts
 npm test                # Chạy tests
 ```
 
-## Cấu trúc dự án
+## Project Worktree
 
 ```
 ├── contracts/
@@ -46,7 +46,7 @@ npm test                # Chạy tests
 └── package.json
 ```
 
-## Lệnh khả dụng
+## CLI
 
 | Lệnh | Mô tả |
 |------|-------|
