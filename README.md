@@ -2,11 +2,11 @@
 
 Hệ thống ngân hàng trực tuyến trên blockchain Ethereum.
 
-## Biến thể cá nhân (MSSV: 33)
+## Personal Variant (MSSV: 33)
 
-> A = số cuối = 3, B = số áp chót = 3
+> A = 3, B = 3
 
-| Thông số | Công thức | Giá trị |
+| Parameter | Fomula | Value |
 |----------|-----------|---------|
 | Grace period | (A mod 3) + 2 | 2 ngày |
 | Default APR | 200 + A×25 bps | 275 bps (2.75%) |

@@ -9,6 +9,12 @@
 >
 > Ghi 4 số này ra giấy/README ngay từ bây giờ — mọi test và demo phải khớp với số này.
 
+**MSSV: 33 | A=3, B=3**
+- Grace period = (3 mod 3) + 2 = 2 ngày
+- Default APR = 200 + 3×25 = 275 bps
+- Early withdraw penalty = 300 + 3×50 = 450 bps
+- Default tenor = 3 lẻ → 180 ngày
+
 ---
 
 ## Nguyên tắc chung khi làm
@@ -24,22 +30,22 @@
 
 **Mục tiêu cuối ngày:** Project khởi tạo xong, 2/3 contract (MockUSDC, VaultManager) viết + test xong.
 
-- [ ] Khởi tạo project: `npx hardhat init`, cài OpenZeppelin (`@openzeppelin/contracts`), cấu hình `hardhat.config.js` (solidity version, networks local).
-- [ ] Thiết lập cấu trúc thư mục: `contracts/`, `test/`, `scripts/`, `frontend/`.
-- [ ] Viết **MockUSDC.sol**:
+- [x] Khởi tạo project: `npx hardhat init`, cài OpenZeppelin (`@openzeppelin/contracts`), cấu hình `hardhat.config.js` (solidity version, networks local).
+- [x] Thiết lập cấu trúc thư mục: `contracts/`, `test/`, `scripts/`, `frontend/`.
+- [x] Viết **MockUSDC.sol**:
   - ERC20, tên/symbol tự chọn, `decimals()` override trả về 6.
   - Hàm `mint(address, uint256)` public cho ai cũng gọi được (test token).
-- [ ] Viết **VaultManager.sol**:
+- [x] Viết **VaultManager.sol**:
   - State: `feeReceiver`, liên kết với token (MockUSDC).
   - `fundVault(uint256 amount)` — admin (hoặc ai cũng được, tùy bạn) nạp token vào vault.
   - `withdrawVault(uint256 amount)` — chỉ owner, rút token ra.
   - `setFeeReceiver(address)` — chỉ owner.
   - `pause()` / `unpause()` dùng OZ `Pausable`.
   - Hàm nội bộ để SavingCore gọi rút lãi trả cho user (`payInterest` hoặc tương tự) — chỉ cho phép SavingCore gọi (dùng `onlyCore` modifier hoặc `Ownable` set SavingCore address).
-- [ ] Viết test cơ bản cho cả 2 contract: mint, fund, withdraw, pause/unpause, setFeeReceiver (permission check — non-owner phải revert).
-- [ ] Ghi lại 4 giá trị biến thể cá nhân vào đầu file README (khung sườn).
+- [x] Viết test cơ bản cho cả 2 contract: mint, fund, withdraw, pause/unpause, setFeeReceiver (permission check — non-owner phải revert).
+- [x] Ghi lại 4 giá trị biến thể cá nhân vào đầu file README (khung sườn).
 
-**Checkpoint cuối ngày:** `npx hardhat test` chạy pass cho MockUSDC + VaultManager.
+**Checkpoint cuối ngày:** `npx hardhat test` chạy pass cho MockUSDC + VaultManager. ✅
 
 ---
 
@@ -47,24 +53,24 @@
 
 **Mục tiêu cuối ngày:** Luồng quan trọng nhất (mở sổ, rút đúng hạn) chạy đúng, có test.
 
-- [ ] Viết struct `Plan` (tenorDays, aprBps, minDeposit, maxDeposit, earlyWithdrawPenaltyBps, enabled).
-- [ ] Viết struct `Deposit`/certificate (owner ngầm định qua NFT, planId, principal, startAt, maturityAt, aprBpsAtOpen, penaltyBpsAtOpen, status enum).
-- [ ] Kế thừa ERC721 cho SavingCore (mỗi deposit = 1 tokenId).
-- [ ] Admin functions: `createPlan`, `updatePlan`, `enablePlan`, `disablePlan` — nhớ emit `PlanCreated`, `PlanUpdated`.
-- [ ] `openDeposit(planId, amount)`:
+- [x] Viết struct `Plan` (tenorDays, aprBps, minDeposit, maxDeposit, earlyWithdrawPenaltyBps, enabled).
+- [x] Viết struct `Deposit`/certificate (owner ngầm định qua NFT, planId, principal, startAt, maturityAt, aprBpsAtOpen, penaltyBpsAtOpen, status enum).
+- [x] Kế thừa ERC721 cho SavingCore (mỗi deposit = 1 tokenId).
+- [x] Admin functions: `createPlan`, `updatePlan`, `enablePlan`, `disablePlan` — nhớ emit `PlanCreated`, `PlanUpdated`.
+- [x] `openDeposit(planId, amount)`:
   - Check plan enabled, amount trong [min, max].
   - `transferFrom` token từ user vào SavingCore (principal giữ ở đây, KHÔNG ở vault).
   - Mint NFT, lưu snapshot APR/penalty tại thời điểm mở.
   - Set `maturityAt = block.timestamp + tenorDays * 86400`.
   - Emit `DepositOpened`.
-- [ ] `withdrawAtMaturity(depositId)`:
+- [x] `withdrawAtMaturity(depositId)`:
   - Check `msg.sender` là owner của NFT, status Active, `block.timestamp >= maturityAt` (quyết định dùng `>=` hay `>` — ghi chú lại lý do vì đây là câu hỏi mở #5).
   - Tính lãi đơn: `(principal * aprBpsAtOpen * tenorSeconds) / (365*24*3600*10000)` — **nhân trước, chia sau**.
   - Gọi VaultManager trả lãi cho user; trả principal từ SavingCore. Nếu vault không đủ → revert (theo base spec).
   - Update status = Withdrawn, emit `Withdrawn`.
-- [ ] Test: happy path đúng số Alice ví dụ (1000 USDC, 90 ngày, 250 bps ≈ 6.16 USDC lãi) + test rút quá sớm phải revert + test rút 2 lần phải revert + test dùng đúng giá trị cá nhân (APR/tenor của bạn).
+- [x] Test: happy path đúng số Alice ví dụ (1000 USDC, 90 ngày, 250 bps ≈ 6.16 USDC lãi) + test rút quá sớm phải revert + test rút 2 lần phải revert + test dùng đúng giá trị cá nhân (APR/tenor của bạn).
 
-**Checkpoint cuối ngày:** Mở sổ → fast-forward thời gian bằng Hardhat time helpers → rút đúng hạn ra đúng số tiền.
+**Checkpoint cuối ngày:** Mở sổ → fast-forward thời gian bằng Hardhat time helpers → rút đúng hạn ra đúng số tiền. ✅
 
 ---
 
@@ -86,8 +92,8 @@
   - Giữ nguyên **tenor và APR gốc** (aprBpsAtOpen cũ, không lấy plan hiện tại).
   - `newPrincipal = oldPrincipal + interest`, mint NFT mới, set status cũ = AutoRenewed.
   - Ai cũng gọi được (bot off-chain), không cần là owner.
-- [ ] Thêm `ReentrancyGuard` (OZ) cho các hàm rút tiền — chuẩn bị cho câu hỏi #7 (attack thinking).
-- [ ] Đảm bảo `pause()` chặn được withdraw/renew (check `whenNotPaused`).
+- [x] Thêm `ReentrancyGuard` (OZ) cho các hàm rút tiền — chuẩn bị cho câu hỏi #7 (attack thinking).
+- [x] Đảm bảo `pause()` chặn được withdraw/renew (check `whenNotPaused`).
 - [ ] Test cho từng hàm: early withdraw đúng số, renew đúng principal mới, auto-renew fail trước grace period / pass sau grace period / APR bị lock đúng, pause chặn rút.
 - [ ] Bắt đầu nháp câu trả lời cho 7 câu hỏi mở trong `README.md` — viết ngay khi vừa code xong phần liên quan (đừng để dồn cuối).
 
@@ -115,7 +121,7 @@
   - Test boundary time: đúng giây maturityAt, đúng giây hết grace period (câu hỏi #5).
   - Test disable plan nhưng vẫn còn deposit active, thử renew vào plan đã tắt (câu hỏi #6).
 - [ ] **Chọn 1 bonus challenge dễ làm nhất** (khuyến nghị **C3 - Partial early withdrawal** hoặc **C2 - Solvency guard**, vì độ phức tạp vừa phải) và implement + test nếu còn thời gian trong ngày. Nếu không kịp, dời sang buffer Ngày 6.
-- [ ] Viết NatSpec comment cho các hàm chính (phục vụ điểm "Code quality").
+- [x] Viết NatSpec comment cho các hàm chính (phục vụ điểm "Code quality").
 
 **Checkpoint cuối ngày:** Coverage report > 90%, không còn TODO trong contract logic.
 
@@ -165,13 +171,13 @@
 
 ## Bảng tổng quan tiến độ
 
-| Ngày | Trọng tâm | Deliverable chính |
-|---|---|---|
-| 1 | Setup + MockUSDC + VaultManager | 2/3 contract nền tảng, test cơ bản |
-| 2 | SavingCore: Plan + Open + Withdraw at Maturity | Luồng quan trọng nhất chạy đúng |
-| 3 | Early withdraw + Renew (manual/auto) + rule enforcement | Đủ 5 user flow + events |
-| 4 | Test suite đầy đủ, coverage >90% | Test coverage + edge case + (bonus nếu kịp) |
-| 5 | Frontend React | Demo UI chạy đầy đủ luồng user |
-| 6 | README + Design Answers + Video + Buffer | Sản phẩm hoàn chỉnh sẵn sàng nộp |
+| Ngày | Trọng tâm | Deliverable chính | Trạng thái |
+|---|---|---|---|
+| 1 | Setup + MockUSDC + VaultManager | 2/3 contract nền tảng, test cơ bản | ✅ Done |
+| 2 | SavingCore: Plan + Open + Withdraw at Maturity | Luồng quan trọng nhất chạy đúng | ✅ Done |
+| 3 | Early withdraw + Renew (manual/auto) + rule enforcement | Đủ 5 user flow + events | 🔲 Todo |
+| 4 | Test suite đầy đủ, coverage >90% | Test coverage + edge case + (bonus nếu kịp) | 🔲 Todo |
+| 5 | Frontend React | Demo UI chạy đầy đủ luồng user | 🔲 Todo |
+| 6 | README + Design Answers + Video + Buffer | Sản phẩm hoàn chỉnh sẵn sàng nộp | 🔲 Todo |
 
 **Lưu ý sống còn:** Đừng để Design Answers dồn hết vào Ngày 6 — viết nháp ngay khi vừa code xong phần liên quan (đã nhắc ở Ngày 2-3), vì đây là phần bạn dễ mất điểm nhất khi vấn đáp nếu chỉ nhớ mù mờ.
